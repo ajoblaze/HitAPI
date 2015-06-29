@@ -10,7 +10,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.latihan.example.hitapi.HitAPI;
 import com.latihan.example.hitapi.JSONHandler;
@@ -26,7 +25,7 @@ public class MainActivity extends ListActivity {
     TextView tv;
     ListView lv;
     List<String> list;
-    String targetUrl;
+    List<String> targetList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +35,9 @@ public class MainActivity extends ListActivity {
         tv = (TextView) findViewById(R.id.textview);
         tv.setMovementMethod(new ScrollingMovementMethod());
 
-        String earthquakeUri = "http://api.geonames.org/earthquakesJSON?north=44.1&south=-9.9&east=-22.4&west=55.2&username=aporter";
-        String apiGithubUri = "https://api.github.com";
+        String uri = "https://api.github.com/users/rheno/repos";
 
-        new HitTask().execute(apiGithubUri, "Param");
+        new HitTask().execute(uri, "Param");
 
         lv = getListView();
 
@@ -48,11 +46,11 @@ public class MainActivity extends ListActivity {
                                     int position, long id) {
 
                 Intent i = new Intent(MainActivity.this, WebActivity.class);
-                i.putExtra("targetUrl", targetUrl);
+                i.putExtra("targetUrl", targetList.get(position));
                 startActivity(i);
 
 //                Toast.makeText(getApplicationContext(),
-//                        id+""+position, Toast.LENGTH_SHORT).show();
+//                        targetList.get(position), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -65,8 +63,11 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    public void setTargetUrl(String url){
-        targetUrl = url;
+    public String elips(String str){
+        if(str.length() > 10){
+            str = str.substring(0, 10)+"...";
+        }
+        return str;
     }
 
     private class HitTask extends AsyncTask<String, Void, String>{
@@ -78,33 +79,30 @@ public class MainActivity extends ListActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            //s = hasil return dari doInBackground
-            ResObject ro = JSONHandler.parseJSON(s);
-            String res = "";
-            res += ro.getAuthorizations_url();
-            res += "\n";
-            res += ro.getCode_search_url();
-            res += "\n";
-            res += ro.getCurrent_user_authorizations_html_url();
-            res += "\n";
-            res += ro.getCurrent_user_url();
-            res += "\n";
-            res += ro.getEmails_url();
-            res += "\n";
-            res += ro.getEmojis_url();
-            res += "\n";
 
-            list = new ArrayList<>();
-            list.add(ro.getAuthorizations_url());
-            list.add(ro.getCode_search_url());
-            list.add(ro.getCurrent_user_authorizations_html_url());
-            list.add(ro.getCurrent_user_url());
-            list.add(ro.getEmails_url());
+            try {
+                //s = hasil return dari doInBackground
+                List<ResObject> rol = JSONHandler.parseJSON(s);
+                String res;
 
-            setTargetUrl(ro.getEmojis_url());
+                list = new ArrayList<>();
+                targetList = new ArrayList<>();
+                for (int i = 0; i < rol.size(); i++) {
+                    res = "";
+                    res += "name = "+rol.get(i).getName();
+                    res += "\n";
+                    res += "avatar_url = "+rol.get(i).getAvatar_url();
+                    res += "\n";
+                    res += "description = "+elips(rol.get(i).getDescription());
+                    list.add(res);
+                    targetList.add(rol.get(i).getHtml_url());
+                }
 
-            setListAdapter(new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1, list));
-//            appendText(res);
+            setListAdapter(new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, list));
+
+            } catch (NullPointerException e){
+                appendText("null");
+            }
         }
     }
 }
