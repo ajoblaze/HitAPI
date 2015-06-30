@@ -11,10 +11,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.latihan.example.hitapi.CustomAdapter;
+import com.latihan.example.hitapi.CustomBaseAdapter;
 import com.latihan.example.hitapi.HitAPI;
 import com.latihan.example.hitapi.JSONHandler;
 import com.latihan.example.hitapi.R;
-import com.latihan.example.hitapi.ResObject;
+import com.latihan.example.hitapi.com.latihan.example.hitapi.object.JSONList;
+import com.latihan.example.hitapi.com.latihan.example.hitapi.object.ResObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +28,7 @@ public class MainActivity extends ListActivity {
     TextView tv;
     ListView lv;
     List<String> list;
-    List<String> targetList;
+    List<ResObject> targetList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +49,7 @@ public class MainActivity extends ListActivity {
                                     int position, long id) {
 
                 Intent i = new Intent(MainActivity.this, WebActivity.class);
-                i.putExtra("targetUrl", targetList.get(position));
+                i.putExtra("targetUrl", targetList.get(position).getHtml_url());
                 startActivity(i);
 
 //                Toast.makeText(getApplicationContext(),
@@ -82,23 +85,24 @@ public class MainActivity extends ListActivity {
 
             try {
                 //s = hasil return dari doInBackground
-                List<ResObject> rol = JSONHandler.parseJSON(s);
-                String res;
+                ArrayList<ResObject> rol = JSONHandler.parseJSON(s);
+//                String res;
 
-                list = new ArrayList<>();
-                targetList = new ArrayList<>();
-                for (int i = 0; i < rol.size(); i++) {
-                    res = "";
-                    res += "name = "+rol.get(i).getName();
-                    res += "\n";
-                    res += "avatar_url = "+rol.get(i).getAvatar_url();
-                    res += "\n";
-                    res += "description = "+elips(rol.get(i).getDescription());
-                    list.add(res);
-                    targetList.add(rol.get(i).getHtml_url());
-                }
+//                list = new ArrayList<>();
+//                targetList = new ArrayList<>();
+//                for (int i = 0; i < rol.size(); i++) {
+//                    res = "";
+//                    res += "name = "+rol.get(i).getName();
+//                    res += "\n";
+//                    res += "avatar_url = "+rol.get(i).getOwner().getAvatar_url();
+//                    res += "\n";
+//                    res += "description = "+elips(rol.get(i).getDescription());
+//                    list.add(res);
+//                    targetList.add(rol.get(i).getHtml_url());
+//                }
 
-            setListAdapter(new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, list));
+                setListAdapter(new CustomBaseAdapter(MainActivity.this, rol));
+                targetList = rol;
 
             } catch (NullPointerException e){
                 appendText("null");
